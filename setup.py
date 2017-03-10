@@ -13,7 +13,8 @@ setup(
             'qqbot = qqbot:Main',
             'qterm = qqbot:QTerm',
             'qtm = qqbot:QTerm',
-            'qq = qqbot:QTerm'
+            'qq = qqbot:QTerm',
+            'rest = qqbot:Start'
         ]
     },
     install_requires = ['requests', 'certifi', 'flask'],

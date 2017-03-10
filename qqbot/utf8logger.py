@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import sys, logging
+import logging
+import sys
+
 
 def equalUtf8(coding):
     return coding is None or coding.lower() in ('utf8', 'utf-8', 'utf_8')
 
+
 class CodingWrappedWriter:
     def __init__(self, coding, writer):
-        self.flush = getattr(writer, 'flush', lambda : None)
-        
+        self.flush = getattr(writer, 'flush', lambda: None)
+
         wcoding = getattr(writer, 'encoding', None)
         wcoding = 'gb18030' if (wcoding in ('gbk', 'cp936')) else wcoding
 
@@ -18,7 +21,7 @@ class CodingWrappedWriter:
             )
         else:
             self._write = writer.write
-    
+
     def write(self, s):
         self._write(s)
         self.flush()
@@ -27,6 +30,7 @@ class CodingWrappedWriter:
 # utf8Stdout.write("中文") <==> 
 # sys.stdout.write("中文".decode('utf8').encode(sys.stdout.encoding))
 utf8Stdout = CodingWrappedWriter('utf8', sys.stdout)
+
 
 def Utf8Logger(name):
     logger = logging.getLogger(name)
@@ -39,30 +43,52 @@ def Utf8Logger(name):
         logger.addHandler(ch)
     return logger
 
+
 logging.getLogger("").setLevel(logging.CRITICAL)
 
 utf8Logger = Utf8Logger('Utf8Logger')
 
+
 def SetLogLevel(level):
     utf8Logger.setLevel(getattr(logging, level.upper()))
+
 
 def DisableLog():
     utf8Logger.disabled = True
 
+
 def EnableLog():
     utf8Logger.disabled = False
+
 
 _thisDict = globals()
 
 for name in ('CRITICAL', 'ERROR', 'WARN', 'INFO', 'DEBUG'):
     _thisDict[name] = getattr(utf8Logger, name.lower())
 
+
 def RAWINPUT(msg):
     utf8Stdout.write(msg)
     s = raw_input('').rstrip()
     if not equalUtf8(sys.stdin.encoding):
         s = s.decode(sys.stdin.encoding).encode('utf8')
-    return s        
+    return s
+
 
 def PRINT(s, end='\n'):
-    return utf8Stdout.write(s+end)
+    return utf8Stdout.write(s + end)
+
+def INFO(msg, *args, **kwargs):
+    utf8Logger.info(msg, *args, **kwargs)
+
+def ERROR(msg, *args, **kwargs):
+    utf8Logger.error(msg, *args, **kwargs)
+
+def CRITICAL(msg, *args, **kwargs):
+    utf8Logger.critical(msg, *args, **kwargs)
+
+def WARN(msg, *args, **kwargs):
+    utf8Logger.warn(msg, *args, **kwargs)
+
+def DEBUG(msg, *args, **kwargs):
+    utf8Logger.debug(msg, *args, **kwargs)

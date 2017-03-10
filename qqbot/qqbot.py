@@ -7,15 +7,18 @@ Website -- https://github.com/pandolia/qqbot/
 Author  -- pandolia@yeah.net
 """
 
-import random, time, sys, subprocess
+import random
+import subprocess
+import sys
+import time
 
+from common import Utf8Partition
+from messagefactory import MessageFactory, Message
 from qconf import QConf
-from utf8logger import INFO, WARN, DEBUG
+from qcontacts import QContact
 from qsession import QLogin, QSession
 from qterm import QTermServer
-from common import Utf8Partition
-from qcontacts import QContact
-from messagefactory import MessageFactory, Message
+from utf8logger import INFO, WARN, DEBUG
 
 class QQBot(MessageFactory):
     def __init__(self, qq=None, user=None, conf=None, ai=None):
@@ -223,6 +226,27 @@ class BasicAI:
             msg.Reply('QQBot已停止')
             bot.Stop()
 
+class Alulu:
+    def __init__(self):
+        self.myqqbot = QQBot()
+
+        @self.myqqbot.On('qqmessage')
+        def handler(bot, message):
+            if message.content == '-hello':
+                bot.SendTo(message.contact, '主人你好，我是阿噜噜')
+            elif message.content == '-stop':
+                bot.SendTo(message.contact, '主人，QQ机器人已关闭')
+                bot.Stop()
+
+    def login(self):
+        self.myqqbot.Login()
+
+    def run(self):
+        self.myqqbot.Run()
+
+    def send(self, ctype, *args, **kw):
+        self.myqqbot.send(ctype, *args, **kw)
+
 def Main():
     try:
         if sys.argv[-1] == '--subprocessCall':
@@ -233,9 +257,13 @@ def Main():
 
         conf = QConf()
         if not conf.restartOnOffline or isSubprocessCall:
-            bot = QQBot(conf=conf)
-            bot.Login()
-            sys.exit(bot.Run())
+            # bot = QQBot(conf=conf)
+            # bot.Login()
+            # sys.exit(bot.Run())
+            myqqbot = Alulu()
+            globalDict['myqqbot'] = myqqbot
+            myqqbot.login()
+            sys.exit(myqqbot.run())
         else:
             args = ['python', __file__] + sys.argv[1:] + \
                    ['--mailAuthCode', conf.mailAuthCode, '--subprocessCall']
@@ -243,6 +271,8 @@ def Main():
                 INFO('重新启动 QQBot ')
     except KeyboardInterrupt:
         sys.exit(0)
+
+globalDict = globals()
 
 if __name__ == '__main__':
     Main()

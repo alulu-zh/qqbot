@@ -148,6 +148,7 @@ def QTerm():
             if not command:
                 qterm(port)
             else:
+                print command
                 coding = sys.getfilesystemencoding()
                 PRINT(query(port, command.decode(coding).encode('utf8')))
     except KeyboardInterrupt:
